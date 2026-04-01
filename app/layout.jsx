@@ -1,9 +1,8 @@
-// app/layout.jsx
 import './globals.css';
 
 export const metadata = {
   title: 'Prop Firm Dashboard',
-  description: 'Trading dashboard',
+  description: 'Trading Dashboard for tracking equity and growth',
 };
 
 export default function RootLayout({ children }) {
