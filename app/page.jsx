@@ -131,7 +131,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-white p-10 flex justify-center">
-      <div className="w-full max-w-[1000px]">
+      <div className="w-full max-w-[1300px]">
         <h1 className="text-4xl font-semibold mb-6">Orlando Dashboard</h1>
 
         <div className="flex gap-3 mb-6">
