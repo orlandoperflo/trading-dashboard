@@ -12,7 +12,6 @@ const getLocalDate = (str) => {
 export default function Dashboard() {
   const [days, setDays] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [initialBalance, setInitialBalance] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [inputStart, setInputStart] = useState("");
   const [inputEnd, setInputEnd] = useState("");
@@ -92,9 +91,7 @@ export default function Dashboard() {
     if (!selectedDate) return;
     let updated = days.filter(d => d.day !== selectedDate);
     const prevEnd = getPrevEnd(selectedDate, updated);
-    const fallbackStart = inputStart !== "" ? Number(inputStart) : Number(initialBalance);
-    const startVal = prevEnd !== null ? prevEnd : fallbackStart;
-    if (!Number.isFinite(startVal)) return alert("Enter an initial balance before saving your first day.");
+    const startVal = prevEnd !== null ? prevEnd : Number(inputStart);
     updated.push(computeDay({ day: selectedDate, start: startVal, end: inputEnd }));
     const sorted = updated.sort((a, b) => new Date(a.day) - new Date(b.day));
     const chained = sorted.map((d, i) => i === 0 ? computeDay(d) : computeDay({ ...d, start: sorted[i - 1].end }));
@@ -149,21 +146,6 @@ export default function Dashboard() {
         </div>
 
 
-
-        <div className="mb-6 backdrop-blur-xl bg-white/60 border border-white/40 rounded-2xl p-4 shadow">
-          <div className="text-sm text-gray-500 mb-2">Initial Balance (used when saving your first trading day)</div>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="e.g. 230"
-              value={initialBalance}
-              onChange={(e) => setInitialBalance(e.target.value)}
-              className="w-full max-w-xs border p-2 rounded"
-            />
-          </div>
-        </div>
         {/* Metrics */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[{
