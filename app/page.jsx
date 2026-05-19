@@ -2,16 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const INITIAL_DATA = [
-  { day: "2026-03-23", start: 70, end: 91 },
-  { day: "2026-03-24", start: 91, end: 110 },
-  { day: "2026-03-25", start: 110, end: 135 },
-  { day: "2026-03-26", start: 135, end: 117 },
-  { day: "2026-03-27", start: 117, end: 137 },
-  { day: "2026-03-30", start: 137.74, end: 156.12 },
-  { day: "2026-03-31", start: 156.12, end: 176.55 },
-  { day: "2026-04-01", start: 176.55, end: 202.47 }
-];
+const INITIAL_DATA = [];
 
 const getLocalDate = (str) => {
   const [y, m, d] = str.split("-").map(Number);
@@ -20,11 +11,11 @@ const getLocalDate = (str) => {
 
 export default function Dashboard() {
   const [days, setDays] = useState([]);
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 2));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [inputStart, setInputStart] = useState("");
   const [inputEnd, setInputEnd] = useState("");
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredCell, setHoveredCell] = useState(null);
   const [showTwoMonthView, setShowTwoMonthView] = useState(false);
 
   const computeDay = (data) => {
@@ -140,7 +131,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-white p-10 flex justify-center">
-      <div className="w-full max-w-7xl">
+      <div className="w-full max-w-[1300px]">
         <h1 className="text-4xl font-semibold mb-6">Orlando Dashboard</h1>
 
         <div className="flex gap-3 mb-6">
@@ -153,6 +144,7 @@ export default function Dashboard() {
             {showTwoMonthView ? "Single Month View" : "2-Month View"}
           </button>
         </div>
+
 
         {/* Metrics */}
         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -199,6 +191,7 @@ export default function Dashboard() {
             const cal = generateCalendar(mo);
             return (
               <div key={mo}>
+                <h3 className="text-sm font-medium text-gray-600 mb-2">{new Date(currentDate.getFullYear(), currentDate.getMonth() + mo).toLocaleString("default", { month: "long", year: "numeric" })}</h3>
                 <div className="grid grid-cols-7 mb-2 text-xs text-gray-400">
                   {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => <div key={d} className="text-center">{d}</div>)}
                 </div>
@@ -206,8 +199,8 @@ export default function Dashboard() {
                   {cal.map((d, i) => (
                     <div
                       key={i}
-                      onMouseEnter={() => setHoveredIndex(i)}
-                      onMouseLeave={() => setHoveredIndex(null)}
+                      onMouseEnter={() => setHoveredCell(`${mo}-${i}`)}
+                      onMouseLeave={() => setHoveredCell(null)}
                       onClick={() => {
                         if (!d) return;
                         const date = d.fullDate || d.day;
@@ -217,7 +210,7 @@ export default function Dashboard() {
                         else { const prevEnd = getPrevEnd(date, days); setInputStart(prevEnd ?? ""); setInputEnd(""); }
                       }}
                       className="aspect-square rounded-xl p-2 cursor-pointer transition-transform duration-200 hover:scale-105 backdrop-blur-xl bg-white/50 border border-white/40"
-                      style={{ ...getHeatStyle(d), ...(hoveredIndex === i && d && !d.empty ? { boxShadow: d.pct >= 0 ? `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(34,197,94,0.35)` : `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(239,68,68,0.35)` } : {}) }}
+                      style={{ ...getHeatStyle(d), ...(hoveredCell === `${mo}-${i}` && d && !d.empty ? { boxShadow: d.pct >= 0 ? `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(34,197,94,0.35)` : `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(239,68,68,0.35)` } : {}) }}
                     >
                       <div className="text-xs">{d ? (d.day ? getLocalDate(d.day).getDate() : d.date) : ""}</div>
                       {d && d.day && <>
