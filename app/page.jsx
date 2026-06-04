@@ -165,9 +165,9 @@ export default function Dashboard() {
         </div>
 
         {/* Equity Chart */}
-        <div className="h-80 mb-10 bg-white rounded-2xl p-2">
+        <div className="h-64 mb-10 backdrop-blur-xl bg-white/60 border border-white/40 rounded-2xl p-4 shadow">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={equityData} margin={{ top: 12, right: 8, bottom: 4, left: 0 }}>
+            <AreaChart data={equityData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity={0.28} />
@@ -182,14 +182,14 @@ export default function Dashboard() {
                   stroke="#6b7280"
                   strokeDasharray="1 10"
                   strokeLinecap="round"
-                  strokeWidth={2}
+                  strokeWidth={1}
                 />
               )}
               <XAxis
                 dataKey="date"
-                axisLine={{ stroke: "#6b7280", strokeWidth: 2 }}
+                axisLine={{ stroke: "#9ca3af", strokeWidth: 1 }}
                 tickLine={false}
-                tick={{ fill: "#171717", fontSize: 28, fontWeight: 500 }}
+                tick={{ fill: "#6b7280", fontSize: 12 }}
                 tickMargin={8}
                 minTickGap={28}
               />
@@ -197,9 +197,9 @@ export default function Dashboard() {
                 domain={["dataMin - 5", "dataMax + 2"]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#171717", fontSize: 28, fontWeight: 500 }}
-                tickMargin={10}
-                width={64}
+                tick={{ fill: "#6b7280", fontSize: 12 }}
+                tickMargin={8}
+                width={48}
               />
               <Tooltip
                 formatter={(value) => [`$${Number(value).toFixed(2)}`, "Balance"]}
@@ -209,12 +209,12 @@ export default function Dashboard() {
                 type="monotone"
                 dataKey="balance"
                 stroke="#2fa458"
-                strokeWidth={4}
+                strokeWidth={2}
                 fill="url(#equityFill)"
                 dot={({ index, cx, cy }) => (
-                  index === lastEquityIndex ? <circle cx={cx} cy={cy} r={8} fill="#2fa458" /> : null
+                  index === lastEquityIndex ? <circle cx={cx} cy={cy} r={5} fill="#2fa458" /> : null
                 )}
-                activeDot={{ r: 8, fill: "#2fa458", stroke: "#2fa458" }}
+                activeDot={{ r: 5, fill: "#2fa458", stroke: "#2fa458" }}
               />
             </AreaChart>
           </ResponsiveContainer>
