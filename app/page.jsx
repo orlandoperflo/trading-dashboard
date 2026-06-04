@@ -43,12 +43,12 @@ export default function Dashboard() {
   const startBalance = days.length ? days[0].start : 0;
   const currentBalance = days.length ? days[days.length - 1].end : 0;
   const totalGrowth = startBalance ? ((currentBalance - startBalance) / startBalance) * 100 : 0;
-  const maxAbsPct = Math.max(...days.map((d) => Math.abs(d.pct || 0)), 1);
+  const maxAbsPnl = Math.max(...days.map((d) => Math.abs(d.pnl || 0)), 1);
 
   const getHeatStyle = (d) => {
     if (!d || d.empty) return { backgroundColor: "#f3f4f6" };
-    const intensity = Math.min(Math.abs(d.pct) / maxAbsPct, 1);
-    const baseColor = d.pct >= 0
+    const intensity = Math.min(Math.abs(d.pnl) / maxAbsPnl, 1);
+    const baseColor = d.pnl >= 0
       ? `rgba(34,197,94, ${0.15 + intensity * 0.5})`
       : `rgba(239,68,68, ${0.15 + intensity * 0.5})`;
     return { backgroundColor: baseColor };
@@ -210,7 +210,7 @@ export default function Dashboard() {
                         else { const prevEnd = getPrevEnd(date, days); setInputStart(prevEnd ?? ""); setInputEnd(""); }
                       }}
                       className="aspect-square rounded-xl p-2 cursor-pointer transition-transform duration-200 hover:scale-105 backdrop-blur-xl bg-white/50 border border-white/40"
-                      style={{ ...getHeatStyle(d), ...(hoveredCell === `${mo}-${i}` && d && !d.empty ? { boxShadow: d.pct >= 0 ? `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(34,197,94,0.35)` : `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(239,68,68,0.35)` } : {}) }}
+                      style={{ ...getHeatStyle(d), ...(hoveredCell === `${mo}-${i}` && d && !d.empty ? { boxShadow: d.pnl >= 0 ? `0 0 ${6 + Math.min(Math.abs(d.pnl)/maxAbsPnl,1)*14}px rgba(34,197,94,0.35)` : `0 0 ${6 + Math.min(Math.abs(d.pnl)/maxAbsPnl,1)*14}px rgba(239,68,68,0.35)` } : {}) }}
                     >
                       <div className="text-xs">{d ? (d.day ? getLocalDate(d.day).getDate() : d.date) : ""}</div>
                       {d && d.day && <>
