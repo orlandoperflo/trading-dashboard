@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 
 const INITIAL_DATA = [];
 
@@ -40,6 +40,8 @@ export default function Dashboard() {
   }, [days]);
 
   const equityData = days.map((d) => ({ date: d.day, balance: d.end }));
+  const openBalance = days.length ? days[0].start : 0;
+  const lastEquityIndex = equityData.length - 1;
   const startBalance = days.length ? days[0].start : 0;
   const currentBalance = days.length ? days[days.length - 1].end : 0;
   const totalGrowth = startBalance ? ((currentBalance - startBalance) / startBalance) * 100 : 0;
@@ -163,14 +165,58 @@ export default function Dashboard() {
         </div>
 
         {/* Equity Chart */}
-        <div className="h-64 mb-10 backdrop-blur-xl bg-white/60 border border-white/40 rounded-2xl p-4 shadow">
+        <div className="h-80 mb-10 bg-white rounded-2xl p-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={equityData}>
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="balance" strokeWidth={2} />
-            </LineChart>
+            <AreaChart data={equityData} margin={{ top: 12, right: 8, bottom: 4, left: 0 }}>
+              <defs>
+                <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22c55e" stopOpacity={0.28} />
+                  <stop offset="55%" stopColor="#22c55e" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="#eeeeee" strokeWidth={1} />
+              {days.length > 0 && (
+                <ReferenceLine
+                  y={openBalance}
+                  stroke="#6b7280"
+                  strokeDasharray="1 10"
+                  strokeLinecap="round"
+                  strokeWidth={2}
+                />
+              )}
+              <XAxis
+                dataKey="date"
+                axisLine={{ stroke: "#6b7280", strokeWidth: 2 }}
+                tickLine={false}
+                tick={{ fill: "#171717", fontSize: 28, fontWeight: 500 }}
+                tickMargin={8}
+                minTickGap={28}
+              />
+              <YAxis
+                domain={["dataMin - 5", "dataMax + 2"]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#171717", fontSize: 28, fontWeight: 500 }}
+                tickMargin={10}
+                width={64}
+              />
+              <Tooltip
+                formatter={(value) => [`$${Number(value).toFixed(2)}`, "Balance"]}
+                contentStyle={{ borderRadius: 12, border: "1px solid #e5e7eb", boxShadow: "0 12px 30px rgba(0,0,0,0.08)" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="balance"
+                stroke="#2fa458"
+                strokeWidth={4}
+                fill="url(#equityFill)"
+                dot={({ index, cx, cy }) => (
+                  index === lastEquityIndex ? <circle cx={cx} cy={cy} r={8} fill="#2fa458" /> : null
+                )}
+                activeDot={{ r: 8, fill: "#2fa458", stroke: "#2fa458" }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
