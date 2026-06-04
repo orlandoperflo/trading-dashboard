@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 
 const INITIAL_DATA = [];
 
@@ -40,15 +40,17 @@ export default function Dashboard() {
   }, [days]);
 
   const equityData = days.map((d) => ({ date: d.day, balance: d.end }));
+  const openBalance = days.length ? days[0].start : 0;
+  const lastEquityIndex = equityData.length - 1;
   const startBalance = days.length ? days[0].start : 0;
   const currentBalance = days.length ? days[days.length - 1].end : 0;
   const totalGrowth = startBalance ? ((currentBalance - startBalance) / startBalance) * 100 : 0;
-  const maxAbsPct = Math.max(...days.map((d) => Math.abs(d.pct || 0)), 1);
+  const maxAbsPnl = Math.max(...days.map((d) => Math.abs(d.pnl || 0)), 1);
 
   const getHeatStyle = (d) => {
     if (!d || d.empty) return { backgroundColor: "#f3f4f6" };
-    const intensity = Math.min(Math.abs(d.pct) / maxAbsPct, 1);
-    const baseColor = d.pct >= 0
+    const intensity = Math.min(Math.abs(d.pnl) / maxAbsPnl, 1);
+    const baseColor = d.pnl >= 0
       ? `rgba(34,197,94, ${0.15 + intensity * 0.5})`
       : `rgba(239,68,68, ${0.15 + intensity * 0.5})`;
     return { backgroundColor: baseColor };
@@ -165,12 +167,56 @@ export default function Dashboard() {
         {/* Equity Chart */}
         <div className="h-64 mb-10 backdrop-blur-xl bg-white/60 border border-white/40 rounded-2xl p-4 shadow">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={equityData}>
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="balance" strokeWidth={2} />
-            </LineChart>
+            <AreaChart data={equityData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22c55e" stopOpacity={0.28} />
+                  <stop offset="55%" stopColor="#22c55e" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="#eeeeee" strokeWidth={1} />
+              {days.length > 0 && (
+                <ReferenceLine
+                  y={openBalance}
+                  stroke="#6b7280"
+                  strokeDasharray="1 10"
+                  strokeLinecap="round"
+                  strokeWidth={1}
+                />
+              )}
+              <XAxis
+                dataKey="date"
+                axisLine={{ stroke: "#9ca3af", strokeWidth: 1 }}
+                tickLine={false}
+                tick={{ fill: "#6b7280", fontSize: 12 }}
+                tickMargin={8}
+                minTickGap={28}
+              />
+              <YAxis
+                domain={["dataMin - 5", "dataMax + 2"]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#6b7280", fontSize: 12 }}
+                tickMargin={8}
+                width={48}
+              />
+              <Tooltip
+                formatter={(value) => [`$${Number(value).toFixed(2)}`, "Balance"]}
+                contentStyle={{ borderRadius: 12, border: "1px solid #e5e7eb", boxShadow: "0 12px 30px rgba(0,0,0,0.08)" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="balance"
+                stroke="#2fa458"
+                strokeWidth={2}
+                fill="url(#equityFill)"
+                dot={({ index, cx, cy }) => (
+                  index === lastEquityIndex ? <circle cx={cx} cy={cy} r={5} fill="#2fa458" /> : null
+                )}
+                activeDot={{ r: 5, fill: "#2fa458", stroke: "#2fa458" }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
@@ -210,7 +256,7 @@ export default function Dashboard() {
                         else { const prevEnd = getPrevEnd(date, days); setInputStart(prevEnd ?? ""); setInputEnd(""); }
                       }}
                       className="aspect-square rounded-xl p-2 cursor-pointer transition-transform duration-200 hover:scale-105 backdrop-blur-xl bg-white/50 border border-white/40"
-                      style={{ ...getHeatStyle(d), ...(hoveredCell === `${mo}-${i}` && d && !d.empty ? { boxShadow: d.pct >= 0 ? `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(34,197,94,0.35)` : `0 0 ${6 + Math.min(Math.abs(d.pct)/maxAbsPct,1)*14}px rgba(239,68,68,0.35)` } : {}) }}
+                      style={{ ...getHeatStyle(d), ...(hoveredCell === `${mo}-${i}` && d && !d.empty ? { boxShadow: d.pnl >= 0 ? `0 0 ${6 + Math.min(Math.abs(d.pnl)/maxAbsPnl,1)*14}px rgba(34,197,94,0.35)` : `0 0 ${6 + Math.min(Math.abs(d.pnl)/maxAbsPnl,1)*14}px rgba(239,68,68,0.35)` } : {}) }}
                     >
                       <div className="text-xs">{d ? (d.day ? getLocalDate(d.day).getDate() : d.date) : ""}</div>
                       {d && d.day && <>
