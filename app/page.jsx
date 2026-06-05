@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 
 const INITIAL_DATA = [];
+const VIEW_PREFERENCES_KEY = "trading_dashboard_view_preferences";
 
 const getLocalDate = (str) => {
   const [y, m, d] = str.split("-").map(Number);
@@ -12,6 +13,7 @@ const getLocalDate = (str) => {
 export default function Dashboard() {
   const [days, setDays] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [hasLoadedViewPreferences, setHasLoadedViewPreferences] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [inputStart, setInputStart] = useState("");
   const [inputEnd, setInputEnd] = useState("");
@@ -33,11 +35,40 @@ export default function Dashboard() {
     } else {
       setDays(INITIAL_DATA.map(computeDay).sort((a, b) => new Date(a.day) - new Date(b.day)));
     }
+
+    const savedViewPreferences = localStorage.getItem(VIEW_PREFERENCES_KEY);
+    if (savedViewPreferences) {
+      try {
+        const { currentDate: savedCurrentDate, showTwoMonthView: savedShowTwoMonthView } = JSON.parse(savedViewPreferences);
+        const parsedDate = new Date(savedCurrentDate);
+
+        if (!Number.isNaN(parsedDate.getTime())) {
+          setCurrentDate(parsedDate);
+        }
+
+        if (typeof savedShowTwoMonthView === "boolean") {
+          setShowTwoMonthView(savedShowTwoMonthView);
+        }
+      } catch {
+        localStorage.removeItem(VIEW_PREFERENCES_KEY);
+      }
+    }
+
+    setHasLoadedViewPreferences(true);
   }, []);
 
   useEffect(() => {
     if (days.length) localStorage.setItem("trading_days", JSON.stringify(days));
   }, [days]);
+
+  useEffect(() => {
+    if (!hasLoadedViewPreferences) return;
+
+    localStorage.setItem(VIEW_PREFERENCES_KEY, JSON.stringify({
+      currentDate: currentDate.toISOString(),
+      showTwoMonthView,
+    }));
+  }, [currentDate, hasLoadedViewPreferences, showTwoMonthView]);
 
   const equityData = days.map((d) => ({ date: d.day, balance: d.end }));
   const openBalance = days.length ? days[0].start : 0;
